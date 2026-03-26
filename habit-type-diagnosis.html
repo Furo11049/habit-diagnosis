@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>習慣タイプ診断｜アリクイパパ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: #f7f6f2;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    border: 0.5px solid #e0dfd8;
+    padding: 2rem 1.75rem;
+    max-width: 540px;
+    width: 100%;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .header .label {
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .q-num {
+    font-size: 13px;
+    color: #888;
+    white-space: nowrap;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #e8e7e2;
+    border-radius: 2px;
+  }
+  .progress-fill {
+    height: 4px;
+    border-radius: 2px;
+    background: #534AB7;
+    transition: width 0.3s ease;
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.7;
+    margin: 1.25rem 0 1rem;
+    color: #1a1a1a;
+  }
+  .q-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 13px 16px;
+    margin: 8px 0;
+    background: #f7f6f2;
+    border: 0.5px solid #e0dfd8;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+  .q-btn:hover {
+    background: #eeedfe;
+    border-color: #534AB7;
+    color: #3C3489;
+  }
+  .result-section { display: none; }
+  .result-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .type-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .result-desc {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #1a1a1a;
+    margin-bottom: 1.25rem;
+  }
+  .advice-wrap {
+    border-top: 0.5px solid #e0dfd8;
+    padding-top: 1rem;
+  }
+  .advice-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .advice-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #1a1a1a;
+  }
+  .restart-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 13px 16px;
+    margin-top: 1.25rem;
+    background: #f7f6f2;
+    border: 0.5px solid #e0dfd8;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #eeedfe; color: #3C3489; border-color: #534AB7; }
+  .footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 12px;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <p class="label">アリクイパパ 特典診断</p>
+    <h1>あなたの習慣タイプは？</h1>
+  </div>
+
+  <div id="quiz-section">
+    <div class="progress-wrap">
+      <span class="q-num" id="q-num">質問 1 / 4</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:25%"></div></div>
+    </div>
+    <p class="q-text" id="q-text"></p>
+    <div id="options"></div>
+  </div>
+
+  <div class="result-section" id="result-section">
+    <p class="result-label">診断結果</p>
+    <span class="type-badge" id="r-badge"></span>
+    <p class="result-desc" id="r-desc"></p>
+    <div class="advice-wrap">
+      <p class="advice-label">このタイプへのアドバイス</p>
+      <p class="advice-text" id="r-advice"></p>
+    </div>
+    <button class="restart-btn" onclick="restart()">もう一度診断する</button>
+  </div>
+
+  <div class="footer">アリクイパパ｜習慣・転職・子育てをコツコツ発信中</div>
+</div>
+
+<script>
+const questions = [
+  {
+    text: "習慣が続かないとき、一番当てはまるのは？",
+    options: [
+      { label: "最初だけ頑張りすぎて、疲れて止まる", type: "A" },
+      { label: "完璧にできない日があると、そのまま諦める", type: "B" },
+      { label: "忙しくなると、後回しにしてそのまま忘れる", type: "C" },
+      { label: "効果が感じられなくて、モチベが下がる", type: "D" },
+    ]
+  },
+  {
+    text: "「今日はいいか」となるとき、どんな状況が多い？",
+    options: [
+      { label: "疲れていて、体が動かない気がする", type: "A" },
+      { label: "昨日サボったから、どうせ無駄かなと思う", type: "B" },
+      { label: "予定が詰まっていて、時間が取れない", type: "C" },
+      { label: "やっても変わらない気がして、やる気が出ない", type: "D" },
+    ]
+  },
+  {
+    text: "習慣を始めるとき、どんな決め方をしがち？",
+    options: [
+      { label: "「よし、毎日やるぞ！」と気合を入れて始める", type: "A" },
+      { label: "「完璧にやり遂げる」とルールを細かく決める", type: "B" },
+      { label: "「なんとなく時間があればやる」と決める", type: "C" },
+      { label: "「○kg痩せる」など大きな目標を設定する", type: "D" },
+    ]
+  },
+  {
+    text: "習慣が崩れたあと、どうなることが多い？",
+    options: [
+      { label: "「また頑張るぞ」と再スタートするが、また同じパターンに", type: "A" },
+      { label: "「もう失敗した」と感じて、完全にやめてしまう", type: "B" },
+      { label: "いつの間にか存在を忘れてしまっている", type: "C" },
+      { label: "「やっぱり自分には無理だ」と諦める", type: "D" },
+    ]
+  }
+];
+
+const results = {
+  A: {
+    type: "気合いスタートタイプ",
+    badge_bg: "#FAECE7", badge_color: "#712B13",
+    desc: "スタートダッシュが得意な分、燃え尽きやすい。最初から飛ばしすぎるのが原因です。",
+    advice: "まず「物足りない」くらいの量から始めること。物足りなさが続く原動力になります。最初の2週間は「ゆるすぎる」くらいがちょうどいい。"
+  },
+  B: {
+    type: "完璧主義タイプ",
+    badge_bg: "#EEEDFE", badge_color: "#3C3489",
+    desc: "真面目で丁寧なのが裏目に出ている。「1回崩れた＝失敗」という思い込みが続かない原因です。",
+    advice: "「75点で続ける」を合格ラインに設定しましょう。できない日があっても「続いている」は壊れません。崩れたら翌日戻るだけ。"
+  },
+  C: {
+    type: "時間まかせタイプ",
+    badge_bg: "#E1F5EE", badge_color: "#085041",
+    desc: "意欲はあるのに、仕組みがない。「時間ができたらやる」は忙しい人には機能しません。",
+    advice: "曜日と時間を今すぐカレンダーに入れてください。「決まった時間にやる」だけで、続く確率が劇的に上がります。"
+  },
+  D: {
+    type: "結果待ちタイプ",
+    badge_bg: "#FAEEDA", badge_color: "#633806",
+    desc: "結果が見えないと頑張れないタイプ。でも習慣の効果は後から一気にくるものです。",
+    advice: "「体重」より「やった日数」を記録しましょう。目に見える積み上げが、結果より先にやる気を作ってくれます。"
+  }
+};
+
+let answers = [], current = 0;
+
+function renderQuestion() {
+  const q = questions[current];
+  document.getElementById('q-num').textContent = `質問 ${current+1} / ${questions.length}`;
+  document.getElementById('progress').style.width = `${((current+1)/questions.length)*100}%`;
+  document.getElementById('q-text').textContent = q.text;
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'q-btn';
+    btn.textContent = opt.label;
+    btn.onclick = () => {
+      answers.push(opt.type);
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+      else { showResult(); }
+    };
+    opts.appendChild(btn);
+  });
+}
+
+function showResult() {
+  const counts = {};
+  answers.forEach(a => counts[a] = (counts[a]||0)+1);
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  const r = results[top];
+  document.getElementById('quiz-section').style.display = 'none';
+  const rs = document.getElementById('result-section');
+  rs.style.display = 'block';
+  document.getElementById('r-badge').textContent = r.type;
+  document.getElementById('r-badge').style.background = r.badge_bg;
+  document.getElementById('r-badge').style.color = r.badge_color;
+  document.getElementById('r-desc').textContent = r.desc;
+  document.getElementById('r-advice').textContent = r.advice;
+}
+
+function restart() {
+  answers = []; current = 0;
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('quiz-section').style.display = 'block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
